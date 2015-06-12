@@ -1,0 +1,17 @@
+{
+  "name": "nougat",
+  "version": "0.0.1",
+  "description": "a library framework for the library that can be used for both Node.js and GoogleAppsScript",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unau/nougat"
+  },
+  "author": "Takeyuki Kojima",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/unau/nougat/issues"
+  },
+  "homepage": "https://github.com/unau/nougat"
+}
+
