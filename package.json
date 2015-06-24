@@ -1,6 +1,6 @@
 {
   "name": "nougat",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "a library framework for the library that can be used for both Node.js and GoogleAppsScript",
   "main": "index.js",
   "repository": {
