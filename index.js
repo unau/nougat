@@ -1,39 +1,55 @@
-(function(global, nougat) {
+(function(arg, nougat) {
   "use strict";
-  nougat.aura = (function() {
+  nougat.env = (function() {
     var h = { UiApp: 'GAS', process: 'Node' };
     for (var k in h) {
-      if (typeof global[k] !== 'undefined') return h[k];
+      if (k in arg.g) return { name: h[k] };
     }
-    return 'unknown';
+    return {};
   })();
-  nougat.isGas = nougat.aura === 'GAS';
-  nougat.isNode = nougat.aura === 'Node';
+  nougat.isGas = nougat.env.name === 'GAS';
+  nougat.isNode = nougat.env.name === 'Node';
   nougat.log = function(arg) {
     return nougat.isGas ? Logger.log(arg) : console.log(arg);
   }
-
-  function export_(global, module, name, stuff) {
-    if (nougat.isGas) {
-      if (name) {
-	global[name] = stuff;
+  var Glace = function(arg, name, body) {
+    this.init(arg, name, body);
+  };
+  Glace.prototype.init = function(arg, name, body) {
+    this.global = arg.g;
+    this.module = arg.m;
+    this.name = name;
+    this.body = body;
+    return this;
+  };
+  Glace.prototype._export = function(stuff) {
+    if (! stuff) {
+      if (typeof this.body != 'function') return this;
+      stuff = this.body(this);
+    }
+    if (this.isGas) {
+      if (this.name) {
+	this.global[this.name] = stuff;
       } else {
 	for (var key in stuff) {
-	  global[key] = stuff[key];
+	  this.global[key] = stuff[key];
 	}
       }
     } else {
-      module.exports = stuff;
+      this.module.exports = stuff;
     }
-  }
-
-  nougat.$ = function(global0, module0, name0, body) {
-    if (! body) {
-      body = name0;
-      name0 = null;
-    }
-    export_(global0, module0, name0, body(global0, nougat));
+    return this;
   };
-  export_(global, typeof module !== 'undefined' ? module : null, null, nougat);
-})(typeof global !== 'undefined' ? global : this, {});
+  'env,isGas,isNode,log'.split(',').forEach(function(key) {
+    Glace.prototype[key] = nougat[key];
+  });
+  return new Glace(arg)._export({$: function(name, arg, body) {
+    if (! body) {
+      body = arg;
+      arg = name;
+      name = null;
+    }
+    return new Glace(arg, name, body)._export();
+  }});
+})(this.UiApp ? {g: this} : {g: global, m: module}, {});
 // end of file
