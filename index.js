@@ -15,37 +15,36 @@
   });
   function getNewGlace(arg, name, body) {
     var cnst = nougat.isNode ? Glace.Node : Glace.Gas;
-    return new cnst().initAs(arg).init(name, body);
+    return new cnst().init(arg, name, body);
   }
-  Glace.prototype.init = function(name, body) {
-    this.name = name;
-    this.body = body;
-    return this;
-  };
-  Glace.prototype._export = function(stuff) {
-    if (! stuff) {
-      if (typeof this.body != 'function') return this;
-      stuff = this.body(this);
-    }
-    this._export_(stuff);
-    return this;
-  };
   (function(spec) {
     for (var methodName in spec) {
       var methodSpec = spec[methodName];
-      for (var subName in methodSpec) {
-        var method = methodSpec[subName];
-        if (method) {
-          var subclass = Glace[subName];
+      (function() {
+        if (typeof methodSpec == 'function') {
+          return [ { clazz: Glace, body: methodSpec } ];
+        }
+        var methods = [];
+        for (var key in methodSpec) {
+          var subclass = Glace[key];
           if (! subclass) {
-            subclass = Glace[subName] = function() {};
+            subclass = Glace[key] = function() {};
             subclass.prototype = new Glace();
           }
-          subclass.prototype[methodName] = method;
+          methods.push( { clazz: subclass, body: methodSpec[key] } );
         }
-      }
+        return methods;
+      })().forEach(function(m) {
+        m.clazz.prototype[methodName] = m.body;
+      });
     }
   })({
+    init: function(arg, name, body) {
+      this.name = name;
+      this.body = body;
+      this.initAs(arg);
+      return this;
+    },
     initAs: {
       Node: function(arg) {
         this.global = arg.g;
@@ -59,6 +58,14 @@
         this.global._nougatport = this.global._nougatport || {};
         return this;
       }
+    },
+    _export: function(stuff) {
+      if (! stuff) {
+        if (typeof this.body != 'function') return this;
+        stuff = this.body(this);
+      }
+      this._export_(stuff);
+      return this;
     },
     _export_: {
       Node: function(stuff) {
@@ -74,11 +81,19 @@
         }
       }
     },
-    require: {
-      Node: function(arg) {
-        return require(this.u.path.resolve(this.dir, arg));
+    require: function(arg) {
+      return this._require(arg, arg.indexOf('./') == 0);
+    },
+    _require: {
+      Node: function(arg, isRelativePath) {
+        var target = (function(glace) {
+          if (! isRelativePath) return arg;
+          return glace.u.path.resolve(glace.dir, arg)
+        })(this);
+        return require(target);
       },
-      Gas: function(arg) {
+      Gas: function(arg, isRelativePath) {
+        if (! isRelativePath) return this.global[arg.replace(/\-/g, '')];
         var key = (function(a) {
           return a[a.length - 1];
         })(arg.split('/'));

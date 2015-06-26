@@ -1,6 +1,6 @@
 {
   "name": "nougat",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a library framework for the library that can be used for both Node.js and GoogleAppsScript",
   "main": "index.js",
   "repository": {
@@ -18,7 +18,7 @@
       "gasProject": {
         "id" : "18DmSweuv1G7TRRm95fXCZBeaP34JkwExbJfExL0LbajCJAtm4yqHBJOc",
         "key": "M5NHcHWRlfLLC58GrsO05CWtj26Rh5Cwx",
-        "version": 2
+        "version": 3
       }
     }
   }
